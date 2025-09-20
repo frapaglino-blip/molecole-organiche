@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <title>Costruttore di Molecole Organiche</title>
+  <style>
+    body { font-family: Arial; text-align: center; background: #f0f0f0; }
+    canvas { background: #fff; border: 1px solid #ccc; margin-top: 20px; }
+    .controls { margin-top: 20px; }
+    label { margin-right: 10px; }
+  </style>
+</head>
+<body>
+  <h1>Costruisci la tua Molecola Organica</h1>
+  <div class="controls">
+    <label>Numero di atomi di Carbonio: <input type="number" id="carbonCount" min="1" max="20" value="5"></label>
+    <label>Tipo di legame:
+      <select id="bondType">
+        <option value="single">Semplice</option>
+        <option value="double">Doppio</option>
+        <option value="triple">Triplo</option>
+      </select>
+    </label>
+    <label>Tipo di catena:
+      <select id="chainType">
+        <option value="linear">Lineare</option>
+        <option value="branched">Ramificata</option>
+        <option value="cyclic">Ciclica</option>
+      </select>
+    </label>
+    <button onclick="drawMolecule()">Genera Molecola</button>
+  </div>
+  <canvas id="moleculeCanvas" width="800" height="400"></canvas>
+
+  <script>
+    const canvas = document.getElementById('moleculeCanvas');
+    const ctx = canvas.getContext('2d');
+
+    function drawAtom(x, y, color, label) {
+      ctx.beginPath();
+      ctx.arc(x, y, 20, 0, 2 * Math.PI);
+      ctx.fillStyle = color;
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = "#000";
+      ctx.fillText(label, x - 5, y + 5);
+    }
+
+    function drawBond(x1, y1, x2, y2, type) {
+      ctx.strokeStyle = "#000";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+      ctx.stroke();
+      if (type === "double") {
+        ctx.beginPath();
+        ctx.moveTo(x1, y1 + 5);
+        ctx.lineTo(x2, y2 + 5);
+        ctx.stroke();
+      } else if (type === "triple") {
+        ctx.beginPath();
+        ctx.moveTo(x1, y1 + 5);
+        ctx.lineTo(x2, y2 + 5);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(x1, y1 - 5);
+        ctx.lineTo(x2, y2 - 5);
+        ctx.stroke();
+      }
+    }
+
+    function drawMolecule() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const carbonCount = parseInt(document.getElementById('carbonCount').value);
+      const bondType = document.getElementById('bondType').value;
+      const chainType = document.getElementById('chainType').value;
+
+      const spacing = 60;
+      let startX = 100;
+      let startY = canvas.height / 2;
+
+      for (let i = 0; i < carbonCount; i++) {
+        let x = startX + i * spacing;
+        let y = startY;
+
+        if (chainType === "branched" && i % 3 === 0) y -= 40;
+        if (chainType === "cyclic") {
+          x = canvas.width / 2 + 100 * Math.cos((2 * Math.PI * i) / carbonCount);
+          y = canvas.height / 2 + 100 * Math.sin((2 * Math.PI * i) / carbonCount);
+        }
+
+        drawAtom(x, y, "black", "C");
+
+        if (i > 0) {
+          let prevX = startX + (i - 1) * spacing;
+          let prevY = startY;
+          if (chainType === "branched" && (i - 1) % 3 === 0) prevY -= 40;
+          if (chainType === "cyclic") {
+            prevX = canvas.width / 2 + 100 * Math.cos((2 * Math.PI * (i - 1)) / carbonCount);
+            prevY = canvas.height / 2 + 100 * Math.sin((2 * Math.PI * (i - 1)) / carbonCount);
+          }
+          drawBond(prevX, prevY, x, y, bondType);
+        }
+      }
+    }
+  </script>
+</body>
+</html>
